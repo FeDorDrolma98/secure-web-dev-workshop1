@@ -36,7 +36,8 @@ function getFilmingLocationsNumber() {
     return filmingLocations.length
 }
 
-console.log(`There is ${getFilmingLocationsNumber()} filming locations in Paris`)
+console.log(`Here is the number of filming locations in Paris : There is ${getFilmingLocationsNumber()} filming locations in Paris`)
+
 console.log("\n📝 TODO 2: Filming locations sorted by start date, from most recent to oldest.");
 // 1. Implement the function
 // 2. Log the first and last item in array
@@ -108,8 +109,8 @@ if (new Date(filmingLocations[0]["fields"]["date_debut"]) - new Date(filmingLoca
 
 */
 
-function sortFilmingLocationsByStartDate() {
-    console.log("Les premieres et dernieres dates :",filmingLocations[0]["fields"]["date_debut"],filmingLocations[filmingLocations.length - 1]["fields"]["date_debut"])
+function sortFilmingLocationsByStartDate() {// ou alors     result.sort((a,b)=>a.date-b.date ?
+    console.log("Les premieres et dernieres dates avant classement:",filmingLocations[0]["fields"]["date_debut"],filmingLocations[filmingLocations.length - 1]["fields"]["date_debut"])
 
     for (let numy=0; numy < 5; numy++) {// 5 au lieu de filmingLocations.length-2
         for (let j = numy; j < filmingLocations.length; j++) {
@@ -128,6 +129,7 @@ function sortFilmingLocationsByStartDate() {
 
     console.log("Les premieres et dernieres dates apres classement (rudimentaire ici):",filmingLocations[0]["fields"]["date_debut"],filmingLocations[filmingLocations.length - 1]["fields"]["date_debut"])
 }
+console.log("Since there is a lot of element in FilmingLocation, we are not going to do all of the sorted work (you can modify manually the code to do so) :")
 sortFilmingLocationsByStartDate() //10766 element a FilmingLocation, bcp d'ou on ne fait pas tout le classement
 
 // for(const filmi of filmingLocations){
@@ -165,7 +167,7 @@ function getFilmingLocationsNumber2020() {
     }
     return list2020
 }// mongo tres utilisé en ce moment
-console.log(`There is ${getFilmingLocationsNumber2020()} filming locations in 2022`)
+console.log(`Here is the number of the filming locations of 2020 only : There is ${getFilmingLocationsNumber2020()} filming locations in 2022`)
 
 console.log("\n📝 TODO 4: Number of filming locations per year")
 // 1. Implement the function, the expected result is an object with years as
@@ -249,7 +251,7 @@ console.log("\n📝 TODO 7: Number of different films")
 function getNumberOfFilms() {
     return getFilmLocationsByFilm().length
 }
-console.log(`There is ${getNumberOfFilms()} different films`)
+console.log(`Here is the number of all the different film : There is ${getNumberOfFilms()} different films`)
 
 
 
@@ -314,8 +316,11 @@ const favoriteFilms =
         'Emily in Paris',
         'TOUT S\'EST BIEN PASSE',
     ]
-
-console.log(getFavoriteFilmsLocations(favoriteFilms))
+console.log("Here are all districts of our favorite movie's filming locations :")
+for(const elem of getFavoriteFilmsLocations(favoriteFilms)){
+    console.table(elem)
+}
+//console.table(getFavoriteFilmsLocations(favoriteFilms))
 
 console.log("\n📝 TODO 10: All filming locations for each film")
 //     e.g. :
@@ -337,7 +342,7 @@ function getFilmingLocationsPerFilm() {
     }
     return films
 }
-console.table("All of this is too long to, so here is just the location of one movie.")
+console.table("All of this is too long to, so here is just the location of one movie :")
 console.table(getFilmingLocationsPerFilm()['Tournage S\u00e9rie Web'])// passer ca en commentaire si on veut voir toutes les locations par films
 //console.log(getFilmingLocationsPerFilm()) //repasser ca en non-commentaire pour la consigne
 
@@ -383,6 +388,12 @@ function sortedCountFilmingTypes(result) {
 console.log('Here are the number of filming location per types sorted by count from highest to lowest :')
 console.table(sortedCountFilmingTypes(countFilmingTypes()))
 
+
+
+
+console.log("\n📝 TODO 13: Find the filming location with the longest duration")
+// 1. Implement the function
+// 2. Log the filming location, and its computed duration
 /**
  * This arrow functions takes a duration in milliseconds and returns a
  * human-readable string of the duration
@@ -390,14 +401,47 @@ console.table(sortedCountFilmingTypes(countFilmingTypes()))
  *  @returns string
  *  */
 const duration = (ms) => `${(ms / (1000 * 60 * 60 * 24)).toFixed(0)} days, ${((ms / (1000 * 60 * 60)) % 24).toFixed(0)} hours and ${((ms / (1000 * 60)) % 60).toFixed(0)} minutes`
+function convertToDuration(result){
+    for(const elem of result){
+        elem["temps"]=duration(elem["temps"])
+    }// on passe tout en durée de type duration
+    return result
+}
 
-//console.log("\n📝 TODO 13: Find the filming location with the longest duration")
-// 1. Implement the function
-// 2. Log the filming location, and its computed duration
+function filmiWithLongestDuration() {
+    const result=[]
+    for (let i=0;i<filmingLocations.length;i++){
+        const lieu=filmingLocations[i]["fields"]["adresse_lieu"]
+        let durat=new Date(filmingLocations[i]["fields"]["date_fin"]) - new Date(filmingLocations[i]["fields"]["date_debut"])
+        if(durat===0){durat=3600000;}// on estime que si le tournage dure moins d'une journée, il dure une heure
+        //on verifie si ce film est deja dans le tableau et on recupere l'indice si besoin
+        let dejala=false
+        for(let j=0;j<result.length;j++){
+            if(result[j]["lieu"]===lieu) {
+                dejala = JSON.parse(JSON.stringify(j))
+            }
+        }
+        if(Number.isInteger(dejala)){result[dejala]["temps"]+=durat}
+        else{//si on a pas trouvé de type avec ce nom, on le créé
+            const filmtemp= {
+                "lieu":lieu,
+                "temps":durat
+            }
+            result.push(filmtemp)
+        }
+    }
+    result.sort((a,b)=>a.temps-b.temps)// on tris les trucs
+    result.reverse()
+    return result
+}
+console.log("Here is the filming location with the longest duration :")
+console.table(convertToDuration(filmiWithLongestDuration())[0])
 
-//console.log("\n📝 TODO 14: Compute the average filming duration")
+
+console.log("\n📝 TODO 14: Compute the average filming duration")
 // 1. Implement the function
 // 2. Log the result
+console.log("Here is the average filming duration : ",duration(filmiWithLongestDuration().map(item=>item.temps).reduce((prev,curr)=>prev+curr,0)/filmiWithLongestDuration().length))
 
 
 
